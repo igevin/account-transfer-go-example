@@ -1,7 +1,6 @@
 package bank
 
 import (
-	"runtime"
 	"sync"
 )
 
@@ -10,24 +9,21 @@ type AccountV1 struct {
 	lock sync.Mutex
 }
 
+var _ Accountable = &AccountV1{}
+
 func (a *AccountV1) Transfer(to Accountable, amount int64) {
-	var too = to.(*AccountV1)
+	too, ok := to.(*AccountV1)
+	if !ok {
+		return
+	}
 	left, right := a, too
 	if left.Id > right.Id {
 		left, right = too, a
 	}
 
-	defer left.lock.Unlock()
 	left.lock.Lock()
-	defer right.lock.Unlock()
+	defer left.lock.Unlock()
 	right.lock.Lock()
-	a.transfer(too, amount)
-}
-
-func (a *AccountV1) transfer(to *AccountV1, amount int64) {
-	a.Balance -= amount
-	// Gosched yields the processor, allowing other goroutines to run. It does not
-	// suspend the current goroutine, so execution resumes automatically.
-	runtime.Gosched()
-	to.Balance += amount
+	defer right.lock.Unlock()
+	a.transfer(to, amount)
 }

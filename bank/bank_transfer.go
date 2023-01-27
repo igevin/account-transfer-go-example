@@ -5,14 +5,6 @@ import (
 	"sync"
 )
 
-type AccountTransfer interface {
-	Transfer(to *AccountV1, amount int64)
-}
-
-type InstituteTransfer interface {
-	Transfer(from *AccountV1, to *AccountV1, amount int64)
-}
-
 type Bank struct {
 	lock        sync.Mutex
 	trans       chan TransferTask
@@ -27,20 +19,21 @@ func NewBank() *Bank {
 }
 
 type TransferTask struct {
-	from   *AccountV1
-	to     *AccountV1
+	from   Accountable
+	to     Accountable
 	amount int64
 }
 
-func (bank *Bank) Transfer(from *AccountV1, to *AccountV1, amount int64) {
+func (bank *Bank) Transfer(from Accountable, to Accountable, amount int64) {
 	defer bank.lock.Unlock()
 	bank.lock.Lock()
-	from.Balance -= amount
+
+	from.SetBalance(from.GetBalance() - amount)
 	runtime.Gosched()
-	to.Balance += amount
+	to.SetBalance(to.GetBalance() + amount)
 }
 
-func (bank *Bank) TransferAsync(from *AccountV1, to *AccountV1, amount int64) {
+func (bank *Bank) TransferAsync(from Accountable, to Accountable, amount int64) {
 	task := TransferTask{from: from, to: to, amount: amount}
 	bank.trans <- task
 }
@@ -50,7 +43,7 @@ func (bank *Bank) listenToTransfer() {
 		for {
 			select {
 			case task := <-bank.trans:
-				task.from.transfer(task.to, task.amount)
+				task.from.Transfer(task.to, task.amount)
 			case <-bank.closeSignal:
 				close(bank.trans)
 				close(bank.closeSignal)

@@ -5,26 +5,26 @@ import (
 	"sync"
 )
 
-type Account struct {
-	Id      int64
-	Balance int64
-	lock    sync.Mutex
+type AccountV1 struct {
+	Account
+	lock sync.Mutex
 }
 
-func (a *Account) Transfer(to *Account, amount int64) {
-	left, right := a, to
+func (a *AccountV1) Transfer(to Accountable, amount int64) {
+	var too = to.(*AccountV1)
+	left, right := a, too
 	if left.Id > right.Id {
-		left, right = to, a
+		left, right = too, a
 	}
 
 	defer left.lock.Unlock()
 	left.lock.Lock()
 	defer right.lock.Unlock()
 	right.lock.Lock()
-	a.TransferUnsafe(to, amount)
+	a.transfer(too, amount)
 }
 
-func (a *Account) TransferUnsafe(to *Account, amount int64) {
+func (a *AccountV1) transfer(to *AccountV1, amount int64) {
 	a.Balance -= amount
 	// Gosched yields the processor, allowing other goroutines to run. It does not
 	// suspend the current goroutine, so execution resumes automatically.

@@ -6,11 +6,11 @@ import (
 )
 
 type AccountTransfer interface {
-	Transfer(to *Account, amount int64)
+	Transfer(to *AccountV1, amount int64)
 }
 
 type InstituteTransfer interface {
-	Transfer(from *Account, to *Account, amount int64)
+	Transfer(from *AccountV1, to *AccountV1, amount int64)
 }
 
 type Bank struct {
@@ -27,12 +27,12 @@ func NewBank() *Bank {
 }
 
 type TransferTask struct {
-	from   *Account
-	to     *Account
+	from   *AccountV1
+	to     *AccountV1
 	amount int64
 }
 
-func (bank *Bank) Transfer(from *Account, to *Account, amount int64) {
+func (bank *Bank) Transfer(from *AccountV1, to *AccountV1, amount int64) {
 	defer bank.lock.Unlock()
 	bank.lock.Lock()
 	from.Balance -= amount
@@ -40,7 +40,7 @@ func (bank *Bank) Transfer(from *Account, to *Account, amount int64) {
 	to.Balance += amount
 }
 
-func (bank *Bank) TransferAsync(from *Account, to *Account, amount int64) {
+func (bank *Bank) TransferAsync(from *AccountV1, to *AccountV1, amount int64) {
 	task := TransferTask{from: from, to: to, amount: amount}
 	bank.trans <- task
 }
@@ -50,7 +50,7 @@ func (bank *Bank) listenToTransfer() {
 		for {
 			select {
 			case task := <-bank.trans:
-				task.from.TransferUnsafe(task.to, task.amount)
+				task.from.transfer(task.to, task.amount)
 			case <-bank.closeSignal:
 				close(bank.trans)
 				close(bank.closeSignal)

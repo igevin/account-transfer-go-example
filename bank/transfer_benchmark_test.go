@@ -2,6 +2,8 @@ package bank
 
 import "testing"
 
+var defaultBalance int64 = 1000
+
 func BenchmarkAccount_Transfer(b *testing.B) {
 	x, y, z := newAccountV1(1), newAccountV1(2), newAccountV1(3)
 	transferTo := func(from, to *AccountV1) {
@@ -47,7 +49,7 @@ func newAccountV1(id int64) *AccountV1 {
 	return &AccountV1{
 		Account: Account{
 			Id:      id,
-			Balance: 1000,
+			Balance: defaultBalance,
 		},
 	}
 }

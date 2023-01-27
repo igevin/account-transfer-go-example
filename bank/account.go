@@ -27,3 +27,24 @@ func (a *AccountV1) Transfer(to Accountable, amount int64) {
 	defer right.lock.Unlock()
 	a.transfer(to, amount)
 }
+
+type AccountV2 struct {
+	Account
+}
+
+var _ Accountable = &AccountV2{}
+
+func (a *AccountV2) Transfer(to Accountable, amount int64) {
+
+}
+
+type Allocator struct {
+}
+
+func (a *Allocator) Apply(from, to any) {
+
+}
+
+func (a *Allocator) Free(from, to any) {
+
+}

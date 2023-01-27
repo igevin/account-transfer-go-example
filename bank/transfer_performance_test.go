@@ -1,6 +1,7 @@
 package bank
 
 import (
+	"github.com/stretchr/testify/assert"
 	"sync"
 	"testing"
 	"time"
@@ -10,10 +11,9 @@ func TestBank_Transfer(t *testing.T) {
 	a := newAccountV1(1)
 	b := newAccountV1(2)
 	c := newAccountV1(3)
-	//bank := Bank{lock: sync.Mutex{}, trans: make(chan TransferTask)}
 	bank := NewBank()
 
-	t.Logf("Before -----> a: %d, b: %d, c: %d", a.Balance, b.Balance, c.Balance)
+	//t.Logf("Before -----> a: %d, b: %d, c: %d", a.Balance, b.Balance, c.Balance)
 	wg := sync.WaitGroup{}
 
 	start := time.Now()
@@ -23,8 +23,11 @@ func TestBank_Transfer(t *testing.T) {
 	concurrentBankTransfer(bank, b, c, 1, &wg)
 
 	wg.Wait()
-	t.Logf("After -----> a: %d, b: %d, c: %d", a.Balance, b.Balance, c.Balance)
+	//t.Logf("After -----> a: %d, b: %d, c: %d", a.Balance, b.Balance, c.Balance)
 	t.Logf("time: %v", time.Since(start))
+	assert.Equal(t, defaultBalance, a.Balance)
+	assert.Equal(t, defaultBalance, b.Balance)
+	assert.Equal(t, defaultBalance, c.Balance)
 	bank.Close()
 }
 
@@ -34,18 +37,21 @@ func TestBank_TransferAsync(t *testing.T) {
 	c := newAccountV1(3)
 	bank := NewBank()
 
-	t.Logf("Before -----> a: %d, b: %d, c: %d", a.Balance, b.Balance, c.Balance)
+	//t.Logf("Before -----> a: %d, b: %d, c: %d", a.Balance, b.Balance, c.Balance)
 
-	start := time.Now()
+	//start := time.Now()
 
 	concurrentBankTransferAsync(bank, c, a, 1)
 	concurrentBankTransferAsync(bank, a, b, 1)
 	concurrentBankTransferAsync(bank, b, c, 1)
 
 	time.Sleep(time.Millisecond * 2)
-	t.Logf("After -----> a: %d, b: %d, c: %d", a.Balance, b.Balance, c.Balance)
-	t.Logf("time: %v", time.Since(start))
+	//t.Logf("After -----> a: %d, b: %d, c: %d", a.Balance, b.Balance, c.Balance)
+	//t.Logf("time: %v", time.Since(start))
 
+	assert.Equal(t, defaultBalance, a.Balance)
+	assert.Equal(t, defaultBalance, b.Balance)
+	assert.Equal(t, defaultBalance, c.Balance)
 	bank.Close()
 }
 
@@ -53,7 +59,7 @@ func TestAccountTransfer(t *testing.T) {
 	a := newAccountV1(1)
 	b := newAccountV1(2)
 	c := newAccountV1(3)
-	t.Logf("Before -----> a: %d, b: %d, c: %d", a.Balance, b.Balance, c.Balance)
+	//t.Logf("Before -----> a: %d, b: %d, c: %d", a.Balance, b.Balance, c.Balance)
 	wg := sync.WaitGroup{}
 
 	start := time.Now()
@@ -63,8 +69,12 @@ func TestAccountTransfer(t *testing.T) {
 	concurrentAccountTransfer(b, c, 1, &wg)
 
 	wg.Wait()
-	t.Logf("After -----> a: %d, b: %d, c: %d", a.Balance, b.Balance, c.Balance)
+	//t.Logf("After -----> a: %d, b: %d, c: %d", a.Balance, b.Balance, c.Balance)
 	t.Logf("time: %v", time.Since(start))
+
+	assert.Equal(t, defaultBalance, a.Balance)
+	assert.Equal(t, defaultBalance, b.Balance)
+	assert.Equal(t, defaultBalance, c.Balance)
 }
 
 func concurrentAccountTransfer(from *AccountV1, to *AccountV1, amount int64, wg *sync.WaitGroup) {

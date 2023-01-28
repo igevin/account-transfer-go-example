@@ -1,6 +1,8 @@
 package bank
 
 import (
+	"context"
+	"golang.org/x/sync/semaphore"
 	"sync"
 )
 
@@ -78,4 +80,42 @@ func getAllocator() *Allocator {
 		}
 	})
 	return allocator
+}
+
+type AccountV3 struct {
+	Account
+	sema *semaphore.Weighted
+}
+
+func NewAccountV3(id int64, balance int64) *AccountV3 {
+	return &AccountV3{
+		Account: Account{
+			Id:      id,
+			Balance: balance,
+		},
+		sema: semaphore.NewWeighted(1),
+	}
+}
+
+var _ Accountable = &AccountV3{}
+
+func (a *AccountV3) Transfer(to Accountable, amount int64) {
+	too, ok := to.(*AccountV3)
+	if !ok {
+		return
+	}
+	left, right := a, too
+	if left.Id > right.Id {
+		left, right = too, a
+	}
+
+	if err := left.sema.Acquire(context.Background(), 1); err != nil {
+		return
+	}
+	defer left.sema.Release(1)
+	if err := right.sema.Acquire(context.Background(), 1); err != nil {
+		return
+	}
+	defer right.sema.Release(1)
+	a.transfer(to, amount)
 }

@@ -21,6 +21,13 @@ func TestAccountV2Transfer(t *testing.T) {
 	testAccountableTransfer(t, a, b, c)
 }
 
+func TestAccountV3Transfer(t *testing.T) {
+	a := NewAccountV3(1, defaultBalance)
+	b := NewAccountV3(2, defaultBalance)
+	c := NewAccountV3(3, defaultBalance)
+	testAccountableTransfer(t, a, b, c)
+}
+
 func testAccountableTransfer(t *testing.T, a, b, c Accountable) {
 	wg := sync.WaitGroup{}
 

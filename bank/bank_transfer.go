@@ -43,6 +43,10 @@ func (bank *Bank) listenToTransfer() {
 		for {
 			select {
 			case task := <-bank.trans:
+				if task.from.GetId() == 0 {
+					bank.Close()
+					continue
+				}
 				task.from.Transfer(task.to, task.amount)
 			case <-bank.closeSignal:
 				close(bank.trans)

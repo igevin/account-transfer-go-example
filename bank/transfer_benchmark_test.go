@@ -49,8 +49,12 @@ func benchmarkAccountTransfer(b *testing.B, x, y, z Accountable) {
 
 func BenchmarkBank_Transfer(b *testing.B) {
 	x, y, z := newAccountV1(1), newAccountV1(2), newAccountV1(3)
+	benchmarkBankTransfer(b, x, y, z)
+}
+
+func benchmarkBankTransfer(b *testing.B, x, y, z Accountable) {
 	bank := NewBank()
-	transferTo := func(bank *Bank, from, to *AccountV1) {
+	transferTo := func(bank *Bank, from, to Accountable) {
 		bank.Transfer(from, to, 1)
 	}
 	b.ResetTimer()
@@ -63,8 +67,12 @@ func BenchmarkBank_Transfer(b *testing.B) {
 
 func BenchmarkBank_TransferAsync(b *testing.B) {
 	x, y, z := newAccountV1(1), newAccountV1(2), newAccountV1(3)
+	benchmarkBankTransferAsync(b, x, y, z)
+}
+
+func benchmarkBankTransferAsync(b *testing.B, x, y, z Accountable) {
 	bank := NewBank()
-	transferTo := func(bank *Bank, from, to *AccountV1) {
+	transferTo := func(bank *Bank, from, to Accountable) {
 		bank.TransferAsync(from, to, 1)
 	}
 	b.ResetTimer()

@@ -24,6 +24,7 @@ type TransferTask struct {
 	amount int64
 }
 
+// Transfer 通过银行级别的锁，保证线程安全，不必考虑Accountable对象本身是否线程安全
 func (bank *Bank) Transfer(from Accountable, to Accountable, amount int64) {
 	defer bank.lock.Unlock()
 	bank.lock.Lock()
@@ -33,6 +34,7 @@ func (bank *Bank) Transfer(from Accountable, to Accountable, amount int64) {
 	to.SetBalance(to.GetBalance() + amount)
 }
 
+// TransferAsync 通过银行级别的channel，把转账业务由并行转串行，保证线程安全，不必考虑Accountable对象本身是否线程安全
 func (bank *Bank) TransferAsync(from Accountable, to Accountable, amount int64) {
 	task := TransferTask{from: from, to: to, amount: amount}
 	bank.trans <- task

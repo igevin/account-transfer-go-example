@@ -2,6 +2,7 @@ package bank
 
 import "runtime"
 
+// Account 是一个线程不安全的结构体，实现了Accountable接口
 type Account struct {
 	Id      int64
 	Balance int64

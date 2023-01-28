@@ -6,6 +6,7 @@ import (
 	"sync"
 )
 
+// AccountV1 组合了Account，通过锁，保证线程安全
 type AccountV1 struct {
 	Account
 	lock sync.Mutex
@@ -30,6 +31,7 @@ func (a *AccountV1) Transfer(to Accountable, amount int64) {
 	a.transfer(to, amount)
 }
 
+// AccountV2 组合了Account，通过借助外部的Allocator，保证线程安全
 type AccountV2 struct {
 	Account
 }
@@ -82,6 +84,7 @@ func getAllocator() *Allocator {
 	return allocator
 }
 
+// AccountV3 组合了Account，通过信号量，保证线程安全
 type AccountV3 struct {
 	Account
 	sema *semaphore.Weighted
